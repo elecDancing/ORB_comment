@@ -185,7 +185,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     cv::Mat H, F; 
 
     // 构造线程来计算H矩阵及其得分
-    // thread方法比较特殊，在传递引用的时候，外层需要用ref来进行引用传递，否则就是浅拷贝
+    // thread方法比较特殊，在传递引用的时候，外层需要用ref来进行引用传递，否则就是浅拷贝 //!两个线程一个计算单应矩阵，一个计算基础矩阵
     thread threadH(&Initializer::FindHomography,	//该线程的主函数
 				   this,							//由于主函数为类的成员函数，所以第一个参数就应该是当前对象的this指针
 				   ref(vbMatchesInliersH), 			//输出，特征点对的Inlier标记

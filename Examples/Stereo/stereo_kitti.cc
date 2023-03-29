@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 {
     if(argc != 4)
     {
+        //词袋文件在orbslam3中改成了二进制文件
         cerr << endl << "Usage: ./stereo_kitti path_to_vocabulary path_to_settings path_to_sequence" << endl;
         return 1;
     }

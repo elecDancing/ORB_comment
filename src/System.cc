@@ -59,7 +59,7 @@ System::System(const string &strVocFile,					//词典文件路径
     else if(mSensor==RGBD)
         cout << "RGB-D" << endl;
 
-    //Check settings file
+    //Check settings file//!读取配置文件信息
     cv::FileStorage fsSettings(strSettingsFile.c_str(), 	//将配置文件名转换成为字符串
     						   cv::FileStorage::READ);		//只读
     //如果打开失败，就输出调试信息
@@ -70,7 +70,7 @@ System::System(const string &strVocFile,					//词典文件路径
        exit(-1);
     }
 
-    //Load ORB Vocabulary
+    //!Load ORB Vocabulary
     cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
     //建立一个新的ORB字典
@@ -88,10 +88,10 @@ System::System(const string &strVocFile,					//词典文件路径
     //否则则说明加载成功
     cout << "Vocabulary loaded!" << endl << endl;
 
-    //Create KeyFrame Database
+    //!Create KeyFrame Database 创建关键帧数据库，主要保存ORB描述子倒排索引（即根据描述子查找拥有该描述子的关键帧）
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
-    //Create the Map
+    //!Create the Map
     mpMap = new Map();
 
     //Create Drawers. These are used by the Viewer
@@ -99,7 +99,7 @@ System::System(const string &strVocFile,					//词典文件路径
     mpFrameDrawer = new FrameDrawer(mpMap);
     mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
 
-    //在本主进程中初始化追踪线程
+    //!在本主进程中初始化追踪线程
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this,						//现在还不是很明白为什么这里还需要一个this指针  TODO  
@@ -111,7 +111,7 @@ System::System(const string &strVocFile,					//词典文件路径
                              strSettingsFile, 			//设置文件路径
                              mSensor);					//传感器类型iomanip
 
-    //初始化局部建图线程并运行
+    //!初始化局部建图线程并运行
     //Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(mpMap, 				//指定使iomanip
     								 mSensor==MONOCULAR);	// TODO 为什么这个要设置成为MONOCULAR？？？
@@ -124,7 +124,7 @@ System::System(const string &strVocFile,					//词典文件路径
     							   mpKeyFrameDatabase, 			//关键帧数据库
     							   mpVocabulary, 				//ORB字典
     							   mSensor!=MONOCULAR);			//当前的传感器是否是单目
-    //创建回环检测线程
+    //!运行这个回环检测线程
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run,	//线程的主函数
     							mpLoopCloser);					//该函数的参数
 
@@ -145,7 +145,7 @@ System::System(const string &strVocFile,					//词典文件路径
     }
 
     //Set pointers between threads
-    //设置进程间的指针
+    //设置进程间的指针//!设置线程之间的通讯
     mpTracker->SetLocalMapper(mpLocalMapper);
     mpTracker->SetLoopClosing(mpLoopCloser);
 
@@ -245,8 +245,8 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     // Check mode change
     //检查模式改变
     {
-        unique_lock<mutex> lock(mMutexMode);
-        if(mbActivateLocalizationMode)
+        unique_lock<mutex> lock(mMutexMode);//!模式改变标志
+        if(mbActivateLocalizationMode)//!如果为真需要切换到定位模式， 定位模式只会执行相机跟踪不会构建地图
         {
             mpLocalMapper->RequestStop();
 
@@ -259,7 +259,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
             mpTracker->InformOnlyTracking(true);
             mbActivateLocalizationMode = false;
         }
-        if(mbDeactivateLocalizationMode)
+        if(mbDeactivateLocalizationMode)//!如果为真需要切换到跟踪模式， 同时执行相机跟踪和地图构建
         {
             mpTracker->InformOnlyTracking(false);
             mpLocalMapper->Release();
@@ -278,14 +278,14 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     }
     }
 
-    //获得相机位姿的估计
+    //!获得相机位姿的估计
     cv::Mat Tcw = mpTracker->GrabImageRGBD(im,depthmap,timestamp);
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-    return Tcw;
+    return Tcw;//!返回当前帧相机的位姿估计
 }
 
 //同理，输入为单目图像时的追踪器接口
@@ -341,9 +341,9 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     cv::Mat Tcw = mpTracker->GrabImageMonocular(im,timestamp);
 
     unique_lock<mutex> lock2(mMutexState);
-    mTrackingState = mpTracker->mState;
-    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
-    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+    mTrackingState = mpTracker->mState; //!更新追踪状态
+    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;//!更新地图点
+    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;//!更新关键帧
 
     return Tcw;
 }

@@ -58,12 +58,12 @@ int main(int argc, char **argv)
 {
     if(argc != 5)
     {
-        cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
+        cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl; //最后一个是左右目配准文件
         return 1;
     }
 
     // Retrieve paths to images
-    //按顺序存放需要读取的彩色图像、深度图像的路径，以及对应的时间戳的变量
+    //按顺序存放需要读取的彩色图像、深度图像的路径，以及对应的时间戳的变量 //!下面三个都将从关联文件中找到
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
     vector<double> vTimestamps;
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
     // Check consistency in the number of images and depthmaps
     //彩色图像和深度图像数据的一致性检查
-    int nImages = vstrImageFilenamesRGB.size();
+    int nImages = vstrImageFilenamesRGB.size(); //RGBD图像的数量
     if(vstrImageFilenamesRGB.empty())
     {
         cerr << endl << "No images found in provided path." << endl;
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     //初始化ORB-SLAM2系统
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true); //创建一个名为SLAM的system类
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat imRGB, imD;
-    //对图像序列中的每张图像展开遍历
+    //对图像序列中的每张图像展开遍历//!开始遍历
     for(int ni=0; ni<nImages; ni++)
     {
         //! 读取图像
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
     
         // Pass the image to the SLAM system
-        //! 追踪
+        //! 追踪 开始了
         SLAM.TrackRGBD(imRGB,imD,tframe);
 
 #ifdef COMPILEDWITHC11
@@ -137,13 +137,13 @@ int main(int argc, char **argv)
         //! 计算耗时
         double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
 
-        vTimesTrack[ni]=ttrack;
+        vTimesTrack[ni]=ttrack; //!追踪每张图片的耗时全部记下来
 
         //! 根据时间戳,准备加载下一张图片
         // Wait to load the next frame
         double T=0;
         if(ni<nImages-1)
-            T = vTimestamps[ni+1]-tframe;
+            T = vTimestamps[ni+1]-tframe; //!tframe 就是当前帧图像的时间戳
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
 
@@ -164,8 +164,8 @@ int main(int argc, char **argv)
         totaltime+=vTimesTrack[ni];
     }
     cout << "-------" << endl << endl;
-    cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;
-    cout << "mean tracking time: " << totaltime/nImages << endl;
+    cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;//!追踪时间的中位数
+    cout << "mean tracking time: " << totaltime/nImages << endl;//!追踪时间的平均值
 
     // Save camera trajectory
     //保存最终的相机轨迹
@@ -177,13 +177,14 @@ int main(int argc, char **argv)
     return 0;
 }
 
-//从关联文件中提取这些需要加载的图像的路径和时间戳
+//从关联文件中提取这些需要加载的图像的路径和时间戳 //!后三个参数从第一个参数得到
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps)
 {
     //输入文件流
     ifstream fAssociation;
     //打开关联文件
+    //!该文件中储存的数据格式为 RGB图像时间戳 RGB图像路径 深度图像时间戳 深度图像路径
     fAssociation.open(strAssociationFilename.c_str());
     //一直读取,知道文件结束
     while(!fAssociation.eof())
@@ -196,11 +197,11 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
         {
             //字符串流
             stringstream ss;
-            ss << s;
+            ss << s; //!将一行数据放入字符转流中
             //字符串格式:  时间戳 rgb图像路径 时间戳 深度图像路径
             double t;
             string sRGB, sD;
-            ss >> t;
+            ss >> t; //!`从字符串流中按照顺序一个个输出数据
             vTimestamps.push_back(t);
             ss >> sRGB;
             vstrImageFilenamesRGB.push_back(sRGB);

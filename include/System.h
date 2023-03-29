@@ -81,6 +81,8 @@ public:
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
     // NOTE 注意这里英文注释的说法，双目图像有同步和校准的概念。
+
+    //!
     cv::Mat TrackStereo(const cv::Mat &imLeft,          //左目图像
                         const cv::Mat &imRight,         //右目图像
                         const double &timestamp);       //时间戳
@@ -90,6 +92,7 @@ public:
     // Input depthmap: Float (CV_32F).
     // Returns the camera pose (empty if tracking fails).
     // NOTE 而在这里对RGBD图像的说法则是“配准”
+    //!
     cv::Mat TrackRGBD(const cv::Mat &im,                //彩色图像
                       const cv::Mat &depthmap,          //深度图像
                       const double &timestamp);         //时间戳
@@ -97,6 +100,8 @@ public:
     // Proccess the given monocular frame
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
+
+    //!
     cv::Mat TrackMonocular(const cv::Mat &im,           //图像
                            const double &timestamp);    //时间戳
 
@@ -179,16 +184,16 @@ private:
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
     // performs relocalization if tracking fails.
-    // 追踪器，除了进行运动追踪外还要负责创建关键帧、创建新地图点和进行重定位的工作。详细信息还得看相关文件
+    //! 追踪器，除了进行运动追踪外还要负责创建关键帧、创建新地图点和进行重定位的工作。详细信息还得看相关文件
     Tracking* mpTracker;
 
     // Local Mapper. It manages the local map and performs local bundle adjustment.
-    //局部建图器。局部BA由它进行。
+    //!局部建图器。局部BA由它进行。
     LocalMapping* mpLocalMapper;
 
     // Loop Closer. It searches loops with every new keyframe. If there is a loop it performs
     // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
-    // 回环检测器，它会执行位姿图优化并且开一个新的线程进行全局BA
+    //! 回环检测器，它会执行位姿图优化并且开一个新的线程进行全局BA
     LoopClosing* mpLoopCloser;
 
     // The viewer draws the map and the current camera pose. It uses Pangolin.
@@ -203,7 +208,7 @@ private:
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
-    //系统除了在主进程中进行运动追踪工作外，会创建局部建图线程、回环检测线程和查看器线程。
+    //!系统除了在主进程中进行运动追踪工作外，会创建局部建图线程、回环检测线程和查看器线程。
     std::thread* mptLocalMapping;
     std::thread* mptLoopClosing;
     std::thread* mptViewer;

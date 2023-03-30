@@ -209,6 +209,7 @@ protected:
     int iniThFAST;			                    ///<初始的FAST响应值阈值
     int minThFAST;			                    ///<最小的FAST响应值阈值
 
+    //!便于后面的运算定义的变量
     std::vector<int> mnFeaturesPerLevel;		///<分配到每层图像中，要提取的特征点数目
 
     std::vector<int> umax;	                    ///<计算特征点方向的时候，有个圆形的图像区域，这个vector中存储了每行u轴的边界（四分之一，其他部分通过对称获得）

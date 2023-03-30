@@ -170,7 +170,7 @@ Tracking::Tracking(
     int fIniThFAST = fSettings["ORBextractor.iniThFAST"];
     // 如果默认阈值提取不出足够fast特征点，则使用最小阈值 8
     int fMinThFAST = fSettings["ORBextractor.minThFAST"];
-
+    //!创建特征提取器
     // tracking过程都会用到mpORBextractorLeft作为特征点提取器
     mpORBextractorLeft = new ORBextractor(
         nFeatures,      //参数的含义还是看上面的注释吧
@@ -275,13 +275,13 @@ cv::Mat Tracking::GrabImageStereo(
         }
     }
 
-    // Step 2 ：构造Frame
+    // !Step 2 ：构造Frame
     mCurrentFrame = Frame(
         mImGray,                //左目图像
         imGrayRight,            //右目图像
         timestamp,              //时间戳
-        mpORBextractorLeft,     //左目特征提取器
-        mpORBextractorRight,    //右目特征提取器
+        mpORBextractorLeft,     //!左目特征提取器 把这两个特征提取器传递给了Frame对象 所有的Frame类对象共享ORB特征提取器件
+        mpORBextractorRight,    //!右目特征提取器
         mpORBVocabulary,        //字典
         mK,                     //内参矩阵
         mDistCoef,              //去畸变参数

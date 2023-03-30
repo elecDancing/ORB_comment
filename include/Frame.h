@@ -278,7 +278,8 @@ public:
     ORBVocabulary* mpORBvocabulary;
 
     // Feature extractor. The right is used only in the stereo case.
-    ///ORB特征提取器句柄,其中右侧的提取器句柄只会在双目输入的情况中才会被用到
+    ///!ORB特征提取器句柄,其中右侧的提取器句柄只会在双目输入的情况中才会被用到
+    //!这个就是为了在ExactORB中
     ORBextractor* mpORBextractorLeft, *mpORBextractorRight;
 
     // Frame timestamp.
@@ -297,7 +298,7 @@ public:
 	//NOTICE 注意这里的相机内参数其实都是类的静态成员变量；此外相机的内参数矩阵和矫正参数矩阵却是普通的成员变量，
 	//NOTE 这样是否有些浪费内存空间？
 
-    
+    //!相机内参
     static float fx;        ///<x轴方向焦距
     static float fy;        ///<y轴方向焦距
     static float cx;        ///<x轴方向光心偏移
@@ -323,7 +324,7 @@ public:
     // Far points are inserted as in the monocular case from 2 views.
 	//TODO 这里它所说的话还不是很理解。尤其是后面的一句。
     //而且,这个阈值不应该是在哪个帧中都一样吗?
-    ///判断远点和近点的深度阈值
+    ///!判断远点和近点的深度阈值 判断单目特征点和双目特征点的阈值 深度低于该值的特征点被认为是双目特征点
     float mThDepth;
 
     // Number of KeyPoints.
@@ -341,11 +342,14 @@ public:
     // mvKeysRight:原始右图像提取出的特征点（未校正）
     // mvKeysUn:校正mvKeys后的特征点，对于双目摄像头，一般得到的图像都是校正好的，再校正一次有点多余
     
+
+
+    //!对于第i个图像特征点，矫正前的左目特征点是mvKeys[i], 矫正后的左目特征点是mvKeysUn[i], 其在右目对应的横坐标为mvuRight[i], 纵坐标与mvKey[i],特征点深度是mvDepth【i】
     ///原始左图像提取出的特征点（未校正）
     std::vector<cv::KeyPoint> mvKeys;
     ///原始右图像提取出的特征点（未校正）
     std::vector<cv::KeyPoint> mvKeysRight;
-	///校正mvKeys后的特征点
+	///!校正mvKeys后的特征点(左目)
     std::vector<cv::KeyPoint> mvKeysUn;
 
     
@@ -375,7 +379,7 @@ public:
     DBoW2::FeatureVector mFeatVec;
 
     // ORB descriptor, each row associated to a keypoint.
-    /// 左目摄像头和右目摄像头特征点对应的描述子
+    /// !左目摄像头和右目摄像头特征点对应的描述子
     cv::Mat mDescriptors, mDescriptorsRight;
 
     // MapPoints associated to keypoints, NULL pointer if no association.
@@ -446,7 +450,7 @@ public:
     /** @} */
 
     /**
-     * @brief 一个标志，标记是否已经进行了这些初始化计算
+     * @brief //!第一次为相机参数复制后变为false一个标志，标记是否已经进行了这些初始化计算
      * @note 由于第一帧以及SLAM系统进行重新校正后的第一帧会有一些特殊的初始化处理操作，所以这里设置了这个变量. \n
      * 如果这个标志被置位，说明再下一帧的帧构造函数中要进行这个“特殊的初始化操作”，如果没有被置位则不用。
     */ 

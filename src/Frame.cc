@@ -29,6 +29,9 @@
  * 
  */
 
+
+//!每来一个图像帧，都会生成一帧frame，赋给mCurrentFrame, 除了少数被选择为关键帧的，其他的作用仅仅在
+//!tracking线程中追踪当前帧的位姿，不会对建图和回环检测产生任何影响，在mLastFrame和mCurrentFrame更新后就被系统销毁了
 #include "Frame.h"
 #include "Converter.h"
 #include "ORBmatcher.h"
@@ -142,7 +145,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
 
     // ORB extraction
-    // Step 3 对左目右目图像提取ORB特征点, 第一个参数0-左图， 1-右图。为加速计算，同时开了两个线程计算
+    //! Step 3 对左目右目图像提取ORB特征点, 第一个参数0-左图， 1-右图。为加速计算，同时开了两个线程计算
     thread threadLeft(&Frame::ExtractORB,		//该线程的主函数
 					  this,						//当前帧对象的对象指针
 					  0,						//表示是左图图像
@@ -423,7 +426,7 @@ void Frame::AssignFeaturesToGrid()
 }
 
 /**
- * @brief 提取图像的ORB特征点，提取的关键点存放在mvKeys，描述子存放在mDescriptors
+ * @brief //!提取图像的ORB特征点，提取的关键点存放在mvKeys，描述子存放在mDescriptors
  * 
  * @param[in] flag          标记是左图还是右图。0：左图  1：右图
  * @param[in] im            等待提取特征点的图像
@@ -819,7 +822,7 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
 }
 
 /*
- * 双目匹配函数
+ * //!双目匹配函数
  *
  * 为左图的每一个特征点在右图中找到匹配点 \n
  * 根据基线(有冗余范围)上描述子距离找到匹配, 再进行SAD精确定位 \n ‘

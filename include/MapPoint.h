@@ -74,13 +74,13 @@ public:
     MapPoint(const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
 
     /**
-     * @brief 设置世界坐标系下地图点的位姿 
+     * @brief //!设置世界坐标系下地图点的位姿 
      * 
      * @param[in] Pos 世界坐标系下地图点的位姿 
      */
     void SetWorldPos(const cv::Mat &Pos);
     /**
-     * @brief 获取当前地图点在世界坐标系下的位置
+     * @brief //!获取当前地图点在世界坐标系下的位置
      * @return cv::Mat 位置
      */
     cv::Mat GetWorldPos();
@@ -209,7 +209,7 @@ public:
     cv::Mat GetDescriptor();
 
     /**
-     * @brief 更新平均观测方向以及观测距离范围
+     * @brief //!更新平均观测方向以及观测距离范围 只要地图点本身或者关键帧对该地图点的观测发生变化就调用该函数
      *
      * 由于一个MapPoint会被许多相机观测到，因此在插入关键帧后，需要更新相应变量
      * @see III - C2.2 c2.4
@@ -232,7 +232,7 @@ public:
     //呐,如果是从帧中创建的话,会将普通帧的id存放于这里
     const long int mnFirstFrame; ///< 创建该MapPoint的帧ID（即每一关键帧有一个帧ID）
 
-    // 被观测到的相机数目，单目+1，双目或RGB-D则+2
+    //! 被观测到的相机数目，单目+1，双目或RGB-D则+2 当前地图点最多被多少相机观测到
     int nObs;
 
     // Variables used by the tracking
@@ -279,14 +279,14 @@ public:
 protected:
 
     // Position in absolute coordinates
-    cv::Mat mWorldPos; ///< MapPoint在世界坐标系下的坐标
+    cv::Mat mWorldPos; ///!< MapPoint在世界坐标系下的坐标
 
     // Keyframes observing the point and associated index in keyframe
-    // 观测到该MapPoint的KF和该MapPoint在KF中的索引
-    std::map<KeyFrame*,size_t> mObservations; 
+    //! 观测到该MapPoint的KF和该MapPoint在KF中的索引 地图点与关键帧的观测关系
+    std::map<KeyFrame*,size_t> mObservations;  //!size_t存的是当前地图点在关键帧中的索引
 
     // Mean viewing direction
-    // 该MapPoint平均观测方向
+    //! 该MapPoint平均观测方向
     // 用于判断点是否在可视范围内
     cv::Mat mNormalVector;
 
@@ -303,15 +303,15 @@ protected:
     int mnVisible;
     int mnFound;
 
-    /// Bad flag (we do not currently erase MapPoint from memory)
+    ///! Bad flag (we do not currently erase MapPoint from memory)
     bool mbBad;
     //? 替换本地图点的点? 
     MapPoint* mpReplaced;
 
     /// Scale invariance distances
     //? 
-    float mfMinDistance;
-    float mfMaxDistance;
+    float mfMinDistance; //!平均观测距离的下限
+    float mfMaxDistance;//!平均观测距离的上限
 
     ///所属的地图
     Map* mpMap;

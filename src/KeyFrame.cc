@@ -723,9 +723,9 @@ void KeyFrame::SetBadFlag()
             // 回答：不需要！这里while循环还没退出，会使用更新的sParentCandidates
             if(bContinue)
             {
-                // 因为父节点死了，并且子节点找到了新的父节点，就把它更新为自己的父节点
-                pC->ChangeParent(pP);
-                // 因为子节点找到了新的父节点并更新了父节点，那么该子节点升级，作为其它子节点的备选父节点
+                //! 因为父节点死了，并且子节点找到了新的父节点，就把它更新为自己的父节点
+                pC->ChangeParent(pP); 
+                //! 因为子节点找到了新的父节点并更新了父节点，那么该子节点升级，作为其它子节点的备选父节点
                 sParentCandidates.insert(pC);
                 // 该子节点处理完毕，删掉
                 mspChildrens.erase(pC);

@@ -312,6 +312,7 @@ private:
     int mMaxIterations; 
 
     // Ransac sets
+    //!计算矩阵需要的八对点 
     /** 二维容器，外层容器的大小为迭代次数，内层容器大小为每次迭代算H或F矩阵需要的点,实际上是八对 */
     vector<vector<size_t> > mvSets; 
 

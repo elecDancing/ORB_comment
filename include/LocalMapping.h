@@ -203,7 +203,7 @@ protected:
     // 追踪线程句柄
     Tracking* mpTracker;
 
-    // Tracking线程向LocalMapping中插入关键帧是先插入到该队列中
+    //! Tracking线程向LocalMapping中插入关键帧是先插入到该队列中 缓冲队列
     std::list<KeyFrame*> mlNewKeyFrames; ///< 等待处理的关键帧列表
     /// 当前正在处理的关键帧
     KeyFrame* mpCurrentKeyFrame;

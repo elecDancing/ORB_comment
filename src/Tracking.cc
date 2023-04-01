@@ -482,13 +482,13 @@ void Tracking::Track()
                 CheckReplacedInLastFrame();
 
                 // Step 2.2 运动模型是空的或刚完成重定位，跟踪参考关键帧；否则恒速模型跟踪
-                // 第一个条件,如果运动模型为空,说明是刚初始化开始，或者已经跟丢了
-                // 第二个条件,如果当前帧紧紧地跟着在重定位的帧的后面，我们将重定位帧来恢复位姿
+                //! 第一个条件,如果运动模型为空,说明是刚初始化开始，或者已经跟丢了
+                //! 第二个条件,如果当前帧紧紧地跟着在重定位的帧的后面，我们将重定位帧来恢复位姿
                 // mnLastRelocFrameId 上一次重定位的那一帧
                 if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
-                    // 用最近的关键帧来跟踪当前的普通帧
-                    // 通过BoW的方式在参考帧中找当前帧特征点的匹配点
+                    //! 用最近的关键帧来跟踪当前的普通帧
+                    // 通过BoW的方式在参考帧中找当 前帧特征点的匹配点
                     // 优化每个特征点都对应3D点重投影误差即可得到位姿
                     bOK = TrackReferenceKeyFrame();
                 }
@@ -976,7 +976,7 @@ void Tracking::MonocularInitialization()
 
 /**
  * @brief 单目相机成功初始化后用三角化得到的点生成MapPoints
- * 
+ //!单目相机初始化成功之后创建初始局部地图
  */
 void Tracking::CreateInitialMapMonocular()
 {
@@ -984,7 +984,7 @@ void Tracking::CreateInitialMapMonocular()
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);  // 第一帧
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);  // 第二帧
 
-    // Step 1 将初始关键帧,当前关键帧的描述子转为BoW
+    //! Step 1 将初始关键帧,当前关键帧的描述子转为BoW 计算词袋信息
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
 
@@ -1018,11 +1018,12 @@ void Tracking::CreateInitialMapMonocular()
         // b.该MapPoint的描述子
         // c.该MapPoint的平均观测方向和深度范围
 
-        // 表示该KeyFrame的2D特征点和对应的3D地图点
+        //双向观测
+        //! 表示该KeyFrame的2D特征点和对应的3D地图点
         pKFini->AddMapPoint(pMP,i);
         pKFcur->AddMapPoint(pMP,mvIniMatches[i]);
 
-        // a.表示该MapPoint可以被哪个KeyFrame的哪个特征点观测到
+        //! a.表示该MapPoint可以被哪个KeyFrame的哪个特征点观测到
         pMP->AddObservation(pKFini,i);
         pMP->AddObservation(pKFcur,mvIniMatches[i]);
 
@@ -1043,14 +1044,14 @@ void Tracking::CreateInitialMapMonocular()
 
     // Update Connections
     // Step 3.3 更新关键帧间的连接关系
-    // 在3D点和关键帧之间建立边，每个边有一个权重，边的权重是该关键帧与当前帧公共3D点的个数
+    //! 在3D点和关键帧之间建立边，每个边有一个权重，边的权重是该关键帧与当前帧公共3D点的个数
     pKFini->UpdateConnections();
     pKFcur->UpdateConnections();
 
     // Bundle Adjustment
     cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
 
-    // Step 4 全局BA优化，同时优化所有位姿和三维点
+    //! Step 4 全局BA优化，同时优化所有位姿和三维点 //因为当前地图中只有两帧
     Optimizer::GlobalBundleAdjustemnt(mpMap,20);
 
     // Set median depth to 1
@@ -1087,7 +1088,7 @@ void Tracking::CreateInitialMapMonocular()
         }
     }
 
-    //  Step 8 将关键帧插入局部地图，更新归一化后的位姿、局部地图点
+    //!  Step 8 将关键帧插入局部地图，更新归一化后的位姿、局部地图点
     mpLocalMapper->InsertKeyFrame(pKFini);
     mpLocalMapper->InsertKeyFrame(pKFcur);
 
@@ -1362,7 +1363,7 @@ bool Tracking::TrackWithMotionModel()
     Optimizer::PoseOptimization(&mCurrentFrame);
 
     // Discard outliers
-    // Step 5：剔除地图点中外点
+    //! Step 5：剔除地图点中外点 误匹配的点
     int nmatchesMap = 0;
     for(int i =0; i<mCurrentFrame.N; i++)
     {
@@ -1475,7 +1476,7 @@ bool Tracking::TrackLocalMap()
 }
 
 /**
- * @brief 判断当前帧是否需要插入关键帧
+ * @brief //!判断当前帧是否需要插入关键帧
  * 
  * Step 1：纯VO模式下不插入关键帧，如果局部地图被闭环检测使用，则不插入关键帧
  * Step 2：如果距离上一次重定位比较近，或者关键帧数目超出最大限制，不插入关键帧
@@ -1483,6 +1484,10 @@ bool Tracking::TrackLocalMap()
  * Step 4：查询局部地图管理器是否繁忙,也就是当前能否接受新的关键帧
  * Step 5：对于双目或RGBD摄像头，统计可以添加的有效地图点总数 和 跟踪到的地图点数量
  * Step 6：决策是否需要插入关键帧
+ * 
+ //!1.最近做过重定位，位姿不太准确，不适合做参考关键帧 localMapping线程中还有很多KeyFrame没处理，不适合再给他增加负担了
+ //!2.距离上次创建关键帧的时间已经很久了，需要抓紧创建关键帧
+//!当前帧观测到的地图点要足够多，同时与参考关键帧的重合程度不能太大
  * @return true         需要
  * @return false        不需要
  */

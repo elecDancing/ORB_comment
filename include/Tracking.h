@@ -177,21 +177,21 @@ public:
     int mSensor;
 
     // Current Frame
-    ///追踪线程中有一个当前帧
+    ///!追踪线程中有一个当前帧
     Frame mCurrentFrame;
     ///> 还有当前帧的灰度图像 //? 提问,那么在双目输入和在RGBD输入的时候呢? 
     ///>                        在双目输入和在RGBD输入时，为左侧图像的灰度图
     cv::Mat mImGray;
 
     // Initialization Variables (Monocular)
-    // 初始化时前两帧相关变量
+    //! 初始化时前两帧相关变量
     ///之前的匹配
     std::vector<int> mvIniLastMatches;
-    ///初始化阶段中,当前帧中的特征点和参考帧中的特征点的匹配关系
+    ///!初始化阶段中,当前帧中的特征点和参考帧中的特征点的匹配关系
     std::vector<int> mvIniMatches;// 跟踪初始化时前两帧之间的匹配
-    ///在初始化的过程中,保存参考帧中的特征点
+    ///!在初始化的过程中,保存参考帧中的特征点
     std::vector<cv::Point2f> mvbPrevMatched;
-    ///初始化过程中匹配后进行三角化得到的空间点
+    ///!初始化过程中匹配后进行三角化得到的空间点
     std::vector<cv::Point3f> mvIniP3D;
     ///初始化过程中的参考帧
     Frame mInitialFrame;
@@ -314,7 +314,8 @@ protected:
     /**
      * @brief 对 Local MapPoints 进行跟踪
      * 
-     * 在局部地图中查找在当前帧视野范围内的点，将视野范围内的点和当前帧的特征点进行投影匹配
+     //!在局部地图中查找在当前帧视野范围内的点，将视野范围内的点和当前帧的特征点进行投影匹配
+    //!将局部地图投影到当前帧特征点上
      */
     void SearchLocalPoints();
 
@@ -365,11 +366,12 @@ protected:
     Initializer* mpInitializer;
 
     //Local Map 局部地图相关
-    ///参考关键帧
+    ///!参考关键帧 初始化成功的帧也会被设置为参考关键帧
     KeyFrame* mpReferenceKF;// 当前关键帧就是参考帧
-    ///局部关键帧集合
+    //!初始化成功之后就向这里面添加东西用来构建局部地图
+    ///!局部关键帧集合
     std::vector<KeyFrame*> mvpLocalKeyFrames;
-    ///局部地图点的集合
+    ///!局部地图点的集合
     std::vector<MapPoint*> mvpLocalMapPoints;
     
     // System

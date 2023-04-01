@@ -137,7 +137,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     }
 
     // Generate sets of 8 points for each RANSAC iteration
-    // Step 2 在所有匹配特征点对中随机选择8对匹配特征点为一组，用于估计H矩阵和F矩阵
+    //! Step 2 在所有匹配特征点对中随机选择8对匹配特征点为一组，用于估计H矩阵和F矩阵
     // 共选择 mMaxIterations (默认200) 组
     //mvSets用于保存每次迭代时所使用的向量
     mvSets = vector< vector<size_t> >(mMaxIterations,		//最大的RANSAC迭代次数
@@ -146,7 +146,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
 	//用于进行随机数据样本采样，设置随机数种子
     DUtils::Random::SeedRandOnce(0);
 
-	//开始每一次的迭代 
+	//!开始每一次的迭代  循环500次
     for(int it=0; it<mMaxIterations; it++)
     {
 		//迭代开始的时候，所有的点都是可用的
@@ -375,7 +375,7 @@ void Initializer::FindFundamental(vector<bool> &vbMatchesInliers, float &score, 
     // 某次迭代中，计算的基础矩阵
     cv::Mat F21i;
 
-    // 每次RANSAC记录的Inliers与得分
+    //! 每次RANSAC记录的Inliers与得分 随机采样一致性  
     vector<bool> vbCurrentInliers(N,false);
     float currentScore;
 

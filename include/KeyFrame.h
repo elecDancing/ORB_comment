@@ -28,7 +28,11 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
-
+//! 共视图 mConectedKeyFrameWeights
+//基于对地图点的观测重新构造共视图 ：UpdateConnections()
+//!生成树 mpParent ,mspChildrens 
+//!参与回环检测的关键帧具有不被删除的特权 mbNotErase
+//！删除关键帧时维护共视图和生成树
 
 #ifndef KEYFRAME_H
 #define KEYFRAME_H
@@ -93,21 +97,21 @@ public:
     // ====================== Covisibility graph functions ============================
 
     /**
-     * @brief 为关键帧之间添加连接
+     * @brief //!为关键帧之间添加连接
      * @details 更新了mConnectedKeyFrameWeights
      * @param pKF    关键帧
      * @param weight 权重，该关键帧与pKF共同观测到的3d点数量
      */
     void AddConnection(KeyFrame* pKF, const int &weight);
     /**
-     * @brief 删除当前关键帧和指定关键帧之间的共视关系
+     * @brief //!删除当前关键帧和指定关键帧之间的共视关系
      * @param[in] pKF 要删除的共视关系
      */
     void EraseConnection(KeyFrame* pKF);
-    /** @brief 更新图的连接  */
+    /** @brief //!更新图的连接  */ 基于当前关键帧对地图点的观测构造共视图
     void UpdateConnections();
     /**
-     * @brief 按照权重对连接的关键帧进行排序
+     * @brief //!按照权重对连接的关键帧进行排序
      * @detials 更新后的变量存储在mvpOrderedConnectedKeyFrames和mvOrderedWeights中
      */
     void UpdateBestCovisibles();
@@ -262,11 +266,11 @@ public:
     // Enable/Disable bad flag changes
     /** @brief 设置当前关键帧不要在优化的过程中被删除  */
     void SetNotErase();
-    /** @brief 准备删除当前的这个关键帧,表示不进行回环检测过程;由回环检测线程调用 */
+    /** @brief //!准备删除当前的这个关键帧,表示不进行回环检测过程;由回环检测线程调用 */
     void SetErase();
 
     // Set/check bad flag
-    /** @brief 真正地执行删除关键帧的操作 */
+    /** @brief //!真正地执行删除关键帧的操作 */
     void SetBadFlag();
     /** @brief 返回当前关键帧是否已经完蛋了 */
     bool isBad();
@@ -399,6 +403,7 @@ protected:
     cv::Mat Cw; ///< Stereo middel point. Only for visualization
 
     /// MapPoints associated to keypoints
+    //!当前帧观测到的地图点列表
     std::vector<MapPoint*> mvpMapPoints;
 
     // BoW
@@ -409,25 +414,26 @@ protected:
     /// Grid over the image to speed up feature matching ,其实应该说是二维的,第三维的 vector中保存的是这个网格内的特征点的索引
     std::vector< std::vector <std::vector<size_t> > > mGrid;
 
-    // Covisibility Graph
-     // 与该关键帧连接（至少15个共视地图点）的关键帧与权重
-    std::map<KeyFrame*,int> mConnectedKeyFrameWeights;   
-    // 共视关键帧中权重从大到小排序后的关键帧          
+    //共视图结构由三个成员变量维护
+    //! Covisibility Graph
+     //! 与该关键帧连接（至少15个共视地图点）的关键帧与权重 无序的保存当前关键帧的共视关键帧以及权重
+    std::map<KeyFrame*,int> mConnectedKeyFrameWeights;   //!int类型保存的是两个共视关键帧的权重
+    //! 共视关键帧中权重从大到小排序后的关键帧          
     std::vector<KeyFrame*> mvpOrderedConnectedKeyFrames;            
-    // 共视关键帧中从大到小排序后的权重，和上面对应
+    //! 共视关键帧中从大到小排序后的权重，和上面对应
     std::vector<int> mvOrderedWeights;                             
 
-    // ===================== Spanning Tree and Loop Edges ========================
+    //! ===================== Spanning Tree and Loop Edges ========================
     // std::set是集合，相比vector，进行插入数据这样的操作时会自动排序
     bool mbFirstConnection;                     // 是否是第一次生成树
-    KeyFrame* mpParent;                         // 当前关键帧的父关键帧 （共视程度最高的）
-    std::set<KeyFrame*> mspChildrens;           // 存储当前关键帧的子关键帧
-    std::set<KeyFrame*> mspLoopEdges;           // 和当前关键帧形成回环关系的关键帧
-
+    KeyFrame* mpParent;                         //! 当前关键帧的父关键帧 （共视程度最高的）
+    std::set<KeyFrame*> mspChildrens;           //! 存储当前关键帧的子关键帧
+    std::set<KeyFrame*> mspLoopEdges;           //! 和当前关键帧形成回环关系的关键帧 (与回环检测有关)
+ 
     // Bad flags
-    bool mbNotErase;            ///< 当前关键帧已经和其他的关键帧形成了回环关系，因此在各种优化的过程中不应该被删除
-    bool mbToBeErased;          ///<
-    bool mbBad;                 ///< 
+    bool mbNotErase;            ///< 当前关键帧已经和其他的关键帧形成了回环关系，因此在各种优化的过程中不应该被删除 //!有SetNotErase()方法和SetErase()方法进行设置
+    bool mbToBeErased;          ///!回环检测完毕的关键帧 就可以执行删除了  
+    bool mbBad;                 ///!标记是坏帧 调用isBad函数的返回值
 
     float mHalfBaseline; ///< 对于双目相机来说,双目相机基线长度的一半. Only for visualization
 

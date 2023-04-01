@@ -88,7 +88,7 @@ Tracking::Tracking(
         mnLastRelocFrameId(0)                               //恢复为0,没有进行这个过程的时候的默认值
 {
     // Load camera parameters from settings file
-    // Step 1 从配置文件中加载相机参数
+    //! Step 1 从配置文件中加载相机参数
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
     float fx = fSettings["Camera.fx"];
     float fy = fSettings["Camera.fy"];

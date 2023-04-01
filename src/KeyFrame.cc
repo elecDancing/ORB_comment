@@ -409,12 +409,12 @@ MapPoint* KeyFrame::GetMapPoint(const size_t &idx)
  */
 void KeyFrame::UpdateConnections()
 {
-    // 关键帧-权重，权重为其它关键帧与当前关键帧共视地图点的个数，也称为共视程度
+    // !关键帧-权重，权重为其它关键帧与当前关键帧共视地图点的个数，也称为共视程度
     map<KeyFrame*,int> KFcounter; 
     vector<MapPoint*> vpMP;
 
     {
-        // 获得该关键帧的所有地图点
+        //! 获得该关键帧的所有地图点
         unique_lock<mutex> lockMPs(mMutexFeatures);
         vpMP = mvpMapPoints;
     }
@@ -422,7 +422,7 @@ void KeyFrame::UpdateConnections()
     //For all map points in keyframe check in which other keyframes are they seen
     //Increase counter for those keyframes
     // Step 1 通过地图点被关键帧观测来间接统计关键帧之间的共视程度
-    // 统计每一个地图点都有多少关键帧与当前关键帧存在共视关系，统计结果放在KFcounter
+    //! 统计每一个地图点都有多少关键帧与当前关键帧存在共视关系，统计结果放在KFcounter
     for(vector<MapPoint*>::iterator vit=vpMP.begin(), vend=vpMP.end(); vit!=vend; vit++)
     {
         MapPoint* pMP = *vit;
@@ -433,7 +433,7 @@ void KeyFrame::UpdateConnections()
         if(pMP->isBad())
             continue;
 
-        // 对于每一个地图点，observations记录了可以观测到该地图点的所有关键帧
+        //! 对于每一个地图点，observations记录了可以观测到该地图点的所有关键帧
         map<KeyFrame*,size_t> observations = pMP->GetObservations();
 
         for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
@@ -612,11 +612,11 @@ void KeyFrame::SetErase()
         // 如果当前关键帧和其他的关键帧没有形成回环关系,那么就删吧
         if(mspLoopEdges.empty())
         {
-            mbNotErase = false;
+            mbNotErase = false;//!取消不被删除的特权
         }
     }
 
-    // mbToBeErased：删除之前记录的想要删但时机不合适没有删除的帧
+    // mbToBeErased：//!删除之前记录的想要删但时机不合适(处在回环中）没有删除的帧
     if(mbToBeErased)
     {
         SetBadFlag();
@@ -642,17 +642,17 @@ void KeyFrame::SetBadFlag()
             return;
         else if(mbNotErase)
         {
-            // mbNotErase表示不应该删除，于是把mbToBeErased置为true，假装已经删除，其实没有删除
+            //! mbNotErase表示不应该删除，于是把mbToBeErased置为true，给这个帧记上账本，有机会再删除
             mbToBeErased = true;
             return;
         }
     }
 
-    // Step 2 遍历所有和当前关键帧相连的关键帧，删除他们与当前关键帧的联系
+    //! Step 2 遍历所有和当前关键帧相连的关键帧，删除他们与当前关键帧的联系从共视图中删除本关键帧
     for(map<KeyFrame*,int>::iterator mit = mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
         mit->first->EraseConnection(this); // 让其它的关键帧删除与自己的联系
 
-    // Step 3 遍历每一个当前关键帧的地图点，删除每一个地图点和当前关键帧的联系
+    //! Step 3 遍历每一个当前关键帧的地图点，删除每一个地图点和当前关键帧的联系
     for(size_t i=0; i<mvpMapPoints.size(); i++)
         if(mvpMapPoints[i])
             mvpMapPoints[i]->EraseObservation(this); 
@@ -661,21 +661,22 @@ void KeyFrame::SetBadFlag()
         unique_lock<mutex> lock(mMutexConnections);
         unique_lock<mutex> lock1(mMutexFeatures);
 
-        // 清空自己与其它关键帧之间的联系
+        //! 清空自己与其它关键帧之间的联系 删除共视图
         mConnectedKeyFrameWeights.clear();
         mvpOrderedConnectedKeyFrames.clear();
 
-        // Update Spanning Tree 
+        // !Update Spanning Tree 
         // Step 4 更新生成树，主要是处理好父子关键帧，不然会造成整个关键帧维护的图断裂，或者混乱
-        // 候选父关键帧
+        //! 候选父关键帧
         set<KeyFrame*> sParentCandidates;
         // 将当前帧的父关键帧放入候选父关键帧
         sParentCandidates.insert(mpParent);
 
         // Assign at each iteration one children with a parent (the pair with highest covisibility weight)
         // Include that children as new parent candidate for the rest
-        // 每迭代一次就为其中一个子关键帧寻找父关键帧（最高共视程度），找到父的子关键帧可以作为其他子关键帧的候选父关键帧
-        while(!mspChildrens.empty())
+        //! 每迭代一次就为其中一个子关键帧寻找父关键帧（最高共视程度），找到父的子关键帧可以作为其他子关键帧的候选父关键帧
+        while(!mspChildrens.empty()) //!为孤儿找到父亲 （当前帧的子关键帧） 
+        //为当前帧的每一个子关键帧找到父亲
         {
             bool bContinue = false;
 
@@ -697,7 +698,7 @@ void KeyFrame::SetBadFlag()
 
                 for(size_t i=0, iend=vpConnected.size(); i<iend; i++)
                 {
-                    // sParentCandidates 中刚开始存的是这里子关键帧的“爷爷”，也是当前关键帧的候选父关键帧
+                    //! sParentCandidates 中刚开始存的是这里子关键帧的“爷爷”，也是当前关键帧的候选父关键帧
                     for(set<KeyFrame*>::iterator spcit=sParentCandidates.begin(), spcend=sParentCandidates.end(); spcit!=spcend; spcit++)
                     {
                         // Step 4.3 如果孩子和sParentCandidates中有共视，选择共视最强的那个作为新的父

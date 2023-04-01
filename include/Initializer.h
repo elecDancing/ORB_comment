@@ -41,8 +41,8 @@ namespace ORB_SLAM2
 
 // THIS IS THE INITIALIZER FOR MONOCULAR SLAM. NOT USED IN THE STEREO OR RGBD CASE.
 /**
- * @brief 单目SLAM初始化相关，双目和RGBD不会使用这个类
- */
+ * @brief //!单目SLAM初始化相关，双目和RGBD不会使用这个类
+ */ //!双目和RGBD初始化只需要一帧 ，但是单目相机需要两张图片才能初始化
 class Initializer
 {
     typedef pair<int,int> Match;
@@ -88,6 +88,7 @@ public:
                     vector<bool> &vbTriangulated);
 	
 private:
+    //!单目相机初始化需要计算单应矩阵和基础矩阵选择一个好的
     /**
      * @brief 计算单应矩阵，假设场景为平面情况下通过前两帧求取Homography矩阵，并得到该模型的评分
      * 原理参考Multiple view geometry in computer vision  P109 算法4.4
@@ -282,14 +283,17 @@ private:
 
     // Keypoints from Reference Frame (Frame 1)
     /** 存储Reference Frame中的特征点 */
+    //!参考帧中的特征点
     vector<cv::KeyPoint> mvKeys1; 
 
     // Keypoints from Current Frame (Frame 2)
+    //!当前帧中的特征点
     /** 存储Current Frame中的特征点 */
     vector<cv::KeyPoint> mvKeys2; 
 
     // Current Matches from Reference to Current
     // Reference Frame: 1, Current Frame: 2
+    
     /** Match的数据结构是pair,mvMatches12只记录Reference到Current匹配上的特征点对  */
     vector<Match> mvMatches12;
     /** 记录Reference Frame的每个特征点在Current Frame是否有匹配的特征点 */ 
@@ -301,7 +305,7 @@ private:
 
     // Standard Deviation and Variance
     /** 测量误差 */
-    float mSigma, mSigma2; 
+    float mSigma, mSigma2; //!重投影误差的阈值 以及其平方
 
     // Ransac max iterations
     /** 算Fundamental和Homography矩阵时RANSAC迭代次数  */

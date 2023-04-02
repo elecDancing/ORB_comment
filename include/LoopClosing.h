@@ -55,7 +55,7 @@ class KeyFrameDatabase;
 class LoopClosing
 {
 public:
-    /// 自定义数据类型, ConsistentGroup.first对应每个“连续组”中的关键帧，ConsistentGroup.second为每个“连续组”的序号
+    /// !自定义数据类型, ConsistentGroup.first表示一组共视关键帧，ConsistentGroup.second该关键帧组的连续长度
     typedef pair<set<KeyFrame*>,int> ConsistentGroup;    
     /// 存储关键帧对象和位姿的键值对,这里是map的完整构造函数
     typedef map<KeyFrame*,                  //键
